@@ -1,9 +1,9 @@
 body {
     font-family: Arial, sans-serif;
     background-image: url('pwa-banner.png');
-    background-size: cover;
+    background-size: auto;
     background-position: center;
-    background-attachment: fixed;
+    background-repeat: repeat;
     margin: 0;
     padding: 20px;
 }
