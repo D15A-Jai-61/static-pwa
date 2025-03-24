@@ -3,6 +3,7 @@ body {
     background-image: url('pwa-banner.png');
     background-size: cover;
     background-position: center;
+    background-attachment: fixed;
     margin: 0;
     padding: 20px;
 }
