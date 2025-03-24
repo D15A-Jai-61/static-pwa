@@ -1,7 +1,8 @@
 const CACHE_NAME = 'simple-pwa-cache-v1';
 const urlsToCache = [
     'index.html',
-    'styles.css'
+    'styles.css',
+    'pwa-banner.png'
 ];
 
 // Install the service worker
