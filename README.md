@@ -11,15 +11,15 @@ This is a simple static Progressive Web App (PWA) that demonstrates the capabili
 
 ## File Structure
 
-The project is organized as follows:
-
+The project is organized as follows :
+```
 /simple-pwa
 │
 ├── index.html
 ├── manifest.json
 ├── service-worker.js
 └── styles.css
-
+```
 ## Getting Started
 
 To run the app locally, you can use a local server (like `http-server` or `live-server`) to serve the files over HTTP or HTTPS. Ensure that the service worker is registered correctly for offline functionality.
@@ -27,3 +27,10 @@ To run the app locally, you can use a local server (like `http-server` or `live-
 ## License
 
 This project is open-source and available for anyone to use and modify.
+This project solely exists for me to learn about PWAs and how to build them, and as my academic project.
+
+## Copyrighted content
+
+This project includes a logo being displayed in the background. I do not own the image or logo, it was only included for ensuring PWA's "install to homescreen" function will work on browsers that require it in the manifest file, and I decided let's also use it in the webpage.
+
+I recommend not using this image when running on your system and not to distribute this image.
