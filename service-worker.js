@@ -2,7 +2,8 @@ const CACHE_NAME = 'simple-pwa-cache-v1';
 const urlsToCache = [
     'index.html',
     'styles.css',
-    'pwa-banner.png'
+    'pwa-banner.png',
+    'date-time.js'  // We need to cache this new JS file
 ];
 
 // Install the service worker
@@ -23,6 +24,23 @@ self.addEventListener('fetch', (event) => {
                 return response || fetch(event.request);
             })
     );
+});
+
+// Sync event to fetch current date and time
+self.addEventListener('sync', (event) => {
+    if (event.tag === 'sync-date-time') {
+        event.waitUntil(
+            fetch('https://worldtimeapi.org/api/ip') // API to get current time
+                .then(response => response.json())
+                .then(data => {
+                    const currentTime = data.datetime;
+                    return caches.open(CACHE_NAME)
+                        .then((cache) => {
+                            cache.put('current-time.json', new Response(JSON.stringify({ currentTime })));
+                        });
+                })
+        );
+    }
 });
 
 // Activate the service worker
