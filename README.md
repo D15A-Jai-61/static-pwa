@@ -27,6 +27,7 @@ The project is organized as follows :
 ├── styles.css
 ├── pwa-banner.png
 └── README.md
+
 ```
 ## Getting Started
 

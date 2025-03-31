@@ -8,7 +8,7 @@ const port = 5000;
 // In-memory storage to simulate data persistence
 let formDataStorage = [];
 
-app.use(bodyParser.json());
+app.use(bodyParser.json()); // To handle JSON payloads
 
 // Endpoint to handle syncing form data
 app.post('/sync', (req, res) => {

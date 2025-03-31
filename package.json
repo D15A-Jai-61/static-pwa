@@ -1,0 +1,29 @@
+{
+  "name": "simple-pwa",
+  "version": "1.0.0",
+  "description": "A simple PWA to demonstrate how a PWA works",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"No tests yet\"",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/D15A-Jai-61/static-pwa.git"
+  },
+  "keywords": [
+    "pwa",
+    "progressive-web-app"
+  ],
+  "author": "Jai Talreja",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/D15A-Jai-61/static-pwa/issues"
+  },
+  "homepage": "https://github.com/D15A-Jai-61/static-pwa#readme",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  }
+}

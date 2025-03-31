@@ -40,59 +40,32 @@ self.addEventListener('sync', (event) => {
 });
 
 function syncFormData() {
-    return getFormDataFromIndexedDB().then((formData) => {
-        if (formData) {
-            console.log('[Service Worker] Syncing form data...');
-            return fetch('http://localhost:5000/sync', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    console.log('[Service Worker] Data synced successfully:', data);
-                    // Clear the form data from IndexedDB after "syncing"
-                    clearFormDataFromIndexedDB();
-                })
-                .catch((error) => {
-                    console.error('[Service Worker] Failed to sync data:', error);
-                });
-        }
-    });
-}
+    // Retrieve the form data from localStorage
+    const formData = JSON.parse(localStorage.getItem('formData'));
 
-function getFormDataFromIndexedDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open('offlineFormData', 1);
-        request.onsuccess = function () {
-            const db = request.result;
-            const tx = db.transaction('formData', 'readonly');
-            const store = tx.objectStore('formData');
-            const data = store.getAll();  // Get all stored form data
-            data.onsuccess = function () {
-                if (data.result.length > 0) {
-                    resolve(data.result[0]);  // Return the first form data entry
-                } else {
-                    resolve(null);  // No data found
-                }
-            };
-            data.onerror = reject;
-        };
-        request.onerror = reject;
-    });
-}
-
-function clearFormDataFromIndexedDB() {
-    const request = indexedDB.open('offlineFormData', 1);
-    request.onsuccess = function () {
-        const db = request.result;
-        const tx = db.transaction('formData', 'readwrite');
-        const store = tx.objectStore('formData');
-        store.clear();  // Clear the form data from IndexedDB after syncing
-        console.log('[Service Worker] Form data cleared from IndexedDB.');
-    };
+    if (formData && formData.length > 0) {
+        console.log('[Service Worker] Syncing form data...');
+        
+        // Send the form data to the backend server at localhost:5000/sync
+        return fetch('http://localhost:5000/sync', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log('[Service Worker] Data synced successfully:', data);
+            // Clear the stored form data in localStorage after successful sync
+            localStorage.removeItem('formData');
+        })
+        .catch((error) => {
+            console.error('[Service Worker] Failed to sync data:', error);
+        });
+    } else {
+        console.log('[Service Worker] No form data to sync');
+    }
 }
 
 // Push event - handle push notifications
