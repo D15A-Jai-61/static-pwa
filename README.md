@@ -8,6 +8,9 @@ This is a simple static Progressive Web App (PWA) that demonstrates the capabili
 - **Offline Support**: The service worker caches essential files, allowing the app to function without an internet connection.
 - **Installable**: Users can install the app on their devices, providing a native app-like experience.
 - **Background Image**: The app features a customizable background image that adapts to different screen sizes.
+- **Date and Time Display**: The app now displays the current date and time, fetched from a remote API.
+- **Service Worker**: A service worker is used to cache the current time, and it syncs periodically using the `sync` event.
+
 
 ## File Structure
 
@@ -18,7 +21,8 @@ The project is organized as follows :
 ├── index.html
 ├── manifest.json
 ├── service-worker.js
-└── styles.css
+├── styles.css
+└── date-time.js
 ```
 ## Getting Started
 
