@@ -26,16 +26,32 @@ The project is organized as follows :
 ├── service-worker.js
 ├── styles.css
 ├── pwa-banner.png
+├── server.js
 └── README.md
+
 
 ```
 ## Getting Started
 
-To run the app locally, you can use a local server (like `http-server` or `live-server`) to serve the files over HTTP or HTTPS. Ensure that the service worker is registered correctly for offline functionality.
+Install dependencies :
+
+npm run dev
+
+
+Run the following commands :
+
+npm install
+
+npm run start:backend
+
+npm run start:frontend
+
+npm run dev
+
 
 ## License
 
-This project is open-source and available for anyone to use and modify.
+This project is open-source and published under the GPL-3.0 license.
 This project solely exists for me to learn about PWAs and how to build them, and as my academic project.
 
 ## Copyrighted content
