@@ -45,7 +45,7 @@ function syncFormData() {
             console.log('[Service Worker] Syncing form data...');
             console.log('[Service Worker] Form Data:', formData);
             
-            // Save the form data locally or push it to IndexedDB
+            // Instead of sending to an API, let's store it back in IndexedDB or localStorage for now
             saveFormDataLocally(formData);
 
             // Clear the form data from IndexedDB after "syncing"
@@ -76,7 +76,7 @@ function getFormDataFromIndexedDB() {
 }
 
 function saveFormDataLocally(formData) {
-    // Save form data back into IndexedDB (simulating push)
+    // Save form data back into IndexedDB (simulating pushing data back into the app)
     const request = indexedDB.open('offlineFormData', 1);
     request.onsuccess = function() {
         const db = request.result;
