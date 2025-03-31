@@ -1,60 +1,96 @@
 const CACHE_NAME = 'simple-pwa-cache-v1';
 const urlsToCache = [
     'index.html',
+    'offline-form.html',
     'styles.css',
-    'pwa-banner.png',
-    'date-time.js'  // We need to cache this new JS file
+    'manifest.json',
+    'icon.png',
 ];
 
-// Install the service worker
+// Install the service worker and cache assets
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                return cache.addAll(urlsToCache);
-            })
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll(urlsToCache);
+        })
     );
 });
 
-// Fetch resources from the cache
+// Fetch event - serve cached assets or fetch from network
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                return response || fetch(event.request);
-            })
+        caches.match(event.request).then((response) => {
+            return response || fetch(event.request);
+        })
     );
 });
 
-// Sync event to fetch current date and time
+// Sync event - retry offline form submissions
 self.addEventListener('sync', (event) => {
-    if (event.tag === 'sync-date-time') {
-        event.waitUntil(
-            fetch('https://worldtimeapi.org/api/timezone/Etc/UTC')  // API to get current time
-                .then(response => response.json())
-                .then(data => {
-                    const currentTime = data.datetime;
-                    return caches.open(CACHE_NAME)
-                        .then((cache) => {
-                            cache.put('current-time.json', new Response(JSON.stringify({ currentTime })));
-                        });
-                })
-        );
+    if (event.tag === 'sync-form') {
+        console.log('Sync event triggered: Submitting offline form data');
+        event.waitUntil(syncFormData());
     }
 });
 
-// Activate the service worker
-self.addEventListener('activate', (event) => {
-    const cacheWhitelist = [CACHE_NAME];
+function syncFormData() {
+    return getFormDataFromIndexedDB().then((formData) => {
+        if (formData) {
+            // Simulate sending form data to a server
+            return fetch('https://your-api-endpoint.com/submit-form', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            }).then(response => response.json())
+              .then(() => clearFormDataFromIndexedDB());
+        }
+    });
+}
+
+function getFormDataFromIndexedDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('offlineFormData', 1);
+        request.onsuccess = function() {
+            const db = request.result;
+            const tx = db.transaction('formData', 'readonly');
+            const store = tx.objectStore('formData');
+            const data = store.getAll();
+            data.onsuccess = function() {
+                resolve(data.result[0]);
+            };
+            data.onerror = reject;
+        };
+    });
+}
+
+function clearFormDataFromIndexedDB() {
+    const request = indexedDB.open('offlineFormData', 1);
+    request.onsuccess = function() {
+        const db = request.result;
+        const tx = db.transaction('formData', 'readwrite');
+        const store = tx.objectStore('formData');
+        store.clear();
+        console.log('Form data cleared from IndexedDB.');
+    };
+}
+
+// Push event - handle push notifications
+self.addEventListener('push', (event) => {
+    const options = {
+        body: event.data.text(),
+        icon: 'icon.png',
+        badge: 'badge.png',
+    };
+
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheWhitelist.indexOf(cacheName) === -1) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        })
+        self.registration.showNotification('New Content Available!', options)
+    );
+});
+
+// Handle notification click
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    event.waitUntil(
+        clients.openWindow('https://your-app-url.com/new-content')
     );
 });
