@@ -1,6 +1,6 @@
 # Simple PWA
 
-This is a simple static Progressive Web App (PWA) that demonstrates the capabilities of PWAs, including offline functionality and installation on devices. The app provides users with information about what a PWA is and how it enhances the web experience.
+This is a simple static Progressive Web App (PWA) that demonstrates the capabilities of PWAs, including offline functionality, background synchronization and installation on devices. The app provides users with information about what a PWA is and how it enhances the web experience.
 
 ## Features
 
@@ -8,8 +8,10 @@ This is a simple static Progressive Web App (PWA) that demonstrates the capabili
 - **Offline Support**: The service worker caches essential files, allowing the app to function without an internet connection.
 - **Installable**: Users can install the app on their devices, providing a native app-like experience.
 - **Background Image**: The app features a customizable background image that adapts to different screen sizes.
-- **Date and Time Display**: The app now displays the current date and time, fetched from a remote API.
-- **Service Worker**: A service worker is used to cache the current time, and it syncs periodically using the `sync` event.
+- **Offline Form Submission**: Users can submit forms even when offline, and the app will sync the data when the connection is restored.
+- **Service Worker Sync**: The app will retry sending form data once the network connection is back up.
+- **Dynamic Content Caching**: The app caches and serves dynamic content for offline use.
+- **Push Notifications**: Users will receive push notifications for new content or updates.
 
 
 ## File Structure
