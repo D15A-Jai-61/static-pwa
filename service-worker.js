@@ -43,13 +43,22 @@ function syncFormData() {
     return getFormDataFromIndexedDB().then((formData) => {
         if (formData) {
             console.log('[Service Worker] Syncing form data...');
-            console.log('[Service Worker] Form Data:', formData);
-            
-            // Instead of sending to an API, let's store it back in IndexedDB or localStorage for now
-            saveFormDataLocally(formData);
-
-            // Clear the form data from IndexedDB after "syncing"
-            clearFormDataFromIndexedDB();
+            return fetch('http://localhost:5000/sync', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log('[Service Worker] Data synced successfully:', data);
+                    // Clear the form data from IndexedDB after "syncing"
+                    clearFormDataFromIndexedDB();
+                })
+                .catch((error) => {
+                    console.error('[Service Worker] Failed to sync data:', error);
+                });
         }
     });
 }
@@ -57,12 +66,12 @@ function syncFormData() {
 function getFormDataFromIndexedDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open('offlineFormData', 1);
-        request.onsuccess = function() {
+        request.onsuccess = function () {
             const db = request.result;
             const tx = db.transaction('formData', 'readonly');
             const store = tx.objectStore('formData');
             const data = store.getAll();  // Get all stored form data
-            data.onsuccess = function() {
+            data.onsuccess = function () {
                 if (data.result.length > 0) {
                     resolve(data.result[0]);  // Return the first form data entry
                 } else {
@@ -75,23 +84,9 @@ function getFormDataFromIndexedDB() {
     });
 }
 
-function saveFormDataLocally(formData) {
-    // Save form data back into IndexedDB (simulating pushing data back into the app)
-    const request = indexedDB.open('offlineFormData', 1);
-    request.onsuccess = function() {
-        const db = request.result;
-        const tx = db.transaction('formData', 'readwrite');
-        const store = tx.objectStore('formData');
-        store.add(formData);  // Push data back into IndexedDB
-        tx.oncomplete = function() {
-            console.log('[Service Worker] Form data saved locally to IndexedDB:', formData);
-        };
-    };
-}
-
 function clearFormDataFromIndexedDB() {
     const request = indexedDB.open('offlineFormData', 1);
-    request.onsuccess = function() {
+    request.onsuccess = function () {
         const db = request.result;
         const tx = db.transaction('formData', 'readwrite');
         const store = tx.objectStore('formData');
@@ -100,7 +95,7 @@ function clearFormDataFromIndexedDB() {
     };
 }
 
-// Push event - handle push notifications (you can modify this part as per your needs)
+// Push event - handle push notifications
 self.addEventListener('push', (event) => {
     const options = {
         body: event.data.text(),
@@ -117,6 +112,6 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
     event.waitUntil(
-        clients.openWindow('https://d15a-jai-61.github.io/static-pwa/') // Open your app's homepage or a specific page
+        clients.openWindow('https://your-app-url.com') // Open your app's homepage or a specific page
     );
 });
