@@ -4,13 +4,14 @@ const urlsToCache = [
     'offline-form.html',
     'styles.css',
     'manifest.json',
-    'pwa-banner.png', // Only reference files you need
+    'pwa-banner.png',
 ];
 
 // Install the service worker and cache assets
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
+            console.log('[Service Worker] Caching essential assets');
             return cache.addAll(urlsToCache);
         })
     );
@@ -20,7 +21,12 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
     event.respondWith(
         caches.match(event.request).then((response) => {
-            return response || fetch(event.request);
+            if (response) {
+                console.log('[Service Worker] Returning cached resource:', event.request.url);
+                return response;
+            }
+            console.log('[Service Worker] Fetching from network:', event.request.url);
+            return fetch(event.request);
         })
     );
 });
@@ -28,7 +34,7 @@ self.addEventListener('fetch', (event) => {
 // Sync event - retry offline form submissions
 self.addEventListener('sync', (event) => {
     if (event.tag === 'sync-form') {
-        console.log('[Service Worker] Sync event triggered: Submitting offline form data');
+        console.log('[Service Worker] Sync event triggered: Submitting offline form data...');
         event.waitUntil(syncFormData());
     }
 });
@@ -37,10 +43,14 @@ function syncFormData() {
     return getFormDataFromIndexedDB().then((formData) => {
         if (formData) {
             console.log('[Service Worker] Syncing form data...');
-            console.log('[Service Worker] Form data retrieved:', formData); // Simulate submitting form data
-            // Here, instead of sending the data to a backend, we'll just log it
+            console.log('[Service Worker] Form Data:', formData);
+            
+            // Instead of sending to a backend, you could log the data or store it locally
+            // Simulate "sending" the data by logging it or saving it
+            saveFormDataLocally(formData);
+
+            // Clear the form data from IndexedDB after "syncing"
             clearFormDataFromIndexedDB();
-            console.log('[Service Worker] Form data cleared from IndexedDB.');
         }
     });
 }
@@ -54,11 +64,22 @@ function getFormDataFromIndexedDB() {
             const store = tx.objectStore('formData');
             const data = store.getAll();
             data.onsuccess = function() {
-                resolve(data.result[0]); // Assuming we're only storing one form data at a time
+                if (data.result.length > 0) {
+                    resolve(data.result[0]);  // Return the first form data entry
+                } else {
+                    resolve(null);
+                }
             };
             data.onerror = reject;
         };
+        request.onerror = reject;
     });
+}
+
+function saveFormDataLocally(formData) {
+    // For demonstration purposes, save form data to localStorage
+    localStorage.setItem('offlineFormData', JSON.stringify(formData));
+    console.log('[Service Worker] Form data saved locally to localStorage:', formData);
 }
 
 function clearFormDataFromIndexedDB() {
@@ -72,11 +93,12 @@ function clearFormDataFromIndexedDB() {
     };
 }
 
-// Push event - handle push notifications (you can customize this if needed)
+// Push event - handle push notifications (you can modify this part as per your needs)
 self.addEventListener('push', (event) => {
     const options = {
         body: event.data.text(),
-        badge: 'badge.png', // You can update this if you have a badge image
+        icon: 'pwa-banner.png',  // Use pwa-banner.png for the notification icon
+        badge: 'badge.png',      // Optional: You can use a badge if needed
     };
 
     event.waitUntil(
@@ -88,6 +110,6 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
     event.waitUntil(
-        clients.openWindow('/index.html') // URL to be redirected to after clicking the notification
+        clients.openWindow('https://d15a-jai-61.github.io/static-pwa/') // Open your app's homepage or a specific page
     );
 });
