@@ -45,8 +45,7 @@ function syncFormData() {
             console.log('[Service Worker] Syncing form data...');
             console.log('[Service Worker] Form Data:', formData);
             
-            // Instead of sending to a backend, you could log the data or store it locally
-            // Simulate "sending" the data by logging it or saving it
+            // Save the form data locally or push it to IndexedDB
             saveFormDataLocally(formData);
 
             // Clear the form data from IndexedDB after "syncing"
@@ -62,12 +61,12 @@ function getFormDataFromIndexedDB() {
             const db = request.result;
             const tx = db.transaction('formData', 'readonly');
             const store = tx.objectStore('formData');
-            const data = store.getAll();
+            const data = store.getAll();  // Get all stored form data
             data.onsuccess = function() {
                 if (data.result.length > 0) {
                     resolve(data.result[0]);  // Return the first form data entry
                 } else {
-                    resolve(null);
+                    resolve(null);  // No data found
                 }
             };
             data.onerror = reject;
@@ -77,9 +76,17 @@ function getFormDataFromIndexedDB() {
 }
 
 function saveFormDataLocally(formData) {
-    // For demonstration purposes, save form data to localStorage
-    localStorage.setItem('offlineFormData', JSON.stringify(formData));
-    console.log('[Service Worker] Form data saved locally to localStorage:', formData);
+    // Save form data back into IndexedDB (simulating push)
+    const request = indexedDB.open('offlineFormData', 1);
+    request.onsuccess = function() {
+        const db = request.result;
+        const tx = db.transaction('formData', 'readwrite');
+        const store = tx.objectStore('formData');
+        store.add(formData);  // Push data back into IndexedDB
+        tx.oncomplete = function() {
+            console.log('[Service Worker] Form data saved locally to IndexedDB:', formData);
+        };
+    };
 }
 
 function clearFormDataFromIndexedDB() {
@@ -88,7 +95,7 @@ function clearFormDataFromIndexedDB() {
         const db = request.result;
         const tx = db.transaction('formData', 'readwrite');
         const store = tx.objectStore('formData');
-        store.clear();
+        store.clear();  // Clear the form data from IndexedDB after syncing
         console.log('[Service Worker] Form data cleared from IndexedDB.');
     };
 }
