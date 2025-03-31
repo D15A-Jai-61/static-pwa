@@ -30,7 +30,7 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('sync', (event) => {
     if (event.tag === 'sync-date-time') {
         event.waitUntil(
-            fetch('https://worldtimeapi.org/api/ip') // API to get current time
+            fetch('https://worldtimeapi.org/api/timezone/Etc/UTC')  // API to get current time
                 .then(response => response.json())
                 .then(data => {
                     const currentTime = data.datetime;
