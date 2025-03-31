@@ -28,7 +28,7 @@ self.addEventListener('fetch', (event) => {
 // Sync event - retry offline form submissions
 self.addEventListener('sync', (event) => {
     if (event.tag === 'sync-form') {
-        console.log('Sync event triggered: Submitting offline form data');
+        console.log('[Service Worker] Sync event triggered: Submitting offline form data');
         event.waitUntil(syncFormData());
     }
 });
@@ -36,13 +36,11 @@ self.addEventListener('sync', (event) => {
 function syncFormData() {
     return getFormDataFromIndexedDB().then((formData) => {
         if (formData) {
-            // Simulate sending form data to a server
-            return fetch('https://your-api-endpoint.com/submit-form', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            }).then(response => response.json())
-              .then(() => clearFormDataFromIndexedDB());
+            console.log('[Service Worker] Syncing form data...');
+            console.log('[Service Worker] Form data retrieved:', formData); // Simulate submitting form data
+            // Here, instead of sending the data to a backend, we'll just log it
+            clearFormDataFromIndexedDB();
+            console.log('[Service Worker] Form data cleared from IndexedDB.');
         }
     });
 }
@@ -56,7 +54,7 @@ function getFormDataFromIndexedDB() {
             const store = tx.objectStore('formData');
             const data = store.getAll();
             data.onsuccess = function() {
-                resolve(data.result[0]);
+                resolve(data.result[0]); // Assuming we're only storing one form data at a time
             };
             data.onerror = reject;
         };
@@ -70,15 +68,15 @@ function clearFormDataFromIndexedDB() {
         const tx = db.transaction('formData', 'readwrite');
         const store = tx.objectStore('formData');
         store.clear();
-        console.log('Form data cleared from IndexedDB.');
+        console.log('[Service Worker] Form data cleared from IndexedDB.');
     };
 }
 
-// Push event - handle push notifications
+// Push event - handle push notifications (you can customize this if needed)
 self.addEventListener('push', (event) => {
     const options = {
         body: event.data.text(),
-        badge: 'badge.png', // Update this if needed
+        badge: 'badge.png', // You can update this if you have a badge image
     };
 
     event.waitUntil(
@@ -90,6 +88,6 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
     event.waitUntil(
-        clients.openWindow('https://your-app-url.com/new-content')
+        clients.openWindow('/index.html') // URL to be redirected to after clicking the notification
     );
 });
