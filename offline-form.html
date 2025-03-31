@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Submit Form</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Submit Form (Works Offline!)</h1>
+        <form id="offlineForm">
+            <label for="name">Name:</label><br>
+            <input type="text" id="name" name="name" required><br>
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email" required><br>
+            <label for="message">Message:</label><br>
+            <textarea id="message" name="message" required></textarea><br><br>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <script>
+        const form = document.getElementById('offlineForm');
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const formData = {
+                name: form.name.value,
+                email: form.email.value,
+                message: form.message.value
+            };
+
+            // Store the form data in IndexedDB for offline submission
+            if ('indexedDB' in window) {
+                const request = indexedDB.open('offlineFormData', 1);
+                request.onupgradeneeded = function() {
+                    const db = request.result;
+                    const store = db.createObjectStore('formData', { keyPath: 'id', autoIncrement: true });
+                };
+
+                request.onsuccess = function() {
+                    const db = request.result;
+                    const tx = db.transaction('formData', 'readwrite');
+                    const store = tx.objectStore('formData');
+                    store.add(formData);
+                    tx.oncomplete = function() {
+                        console.log('Form data saved locally!');
+                        alert('Form submitted locally! It will sync when online.');
+                    };
+                };
+            }
+
+            // Trigger sync event
+            if (navigator.serviceWorker) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.sync.register('sync-form');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
