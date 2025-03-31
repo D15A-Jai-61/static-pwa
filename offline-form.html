@@ -18,7 +18,11 @@
             <textarea id="message" name="message" required></textarea><br><br>
             <button type="submit">Submit</button>
         </form>
+
+        <!-- Button to go back to the main page -->
+        <button onclick="window.location.href='index.html'">Back to Home</button>
     </div>
+
     <script>
         const form = document.getElementById('offlineForm');
         form.addEventListener('submit', (event) => {

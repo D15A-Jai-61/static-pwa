@@ -15,21 +15,14 @@
         <div id="current-time">
             <!-- Current time will be displayed here -->
         </div>
+        <!-- Button to go to offline form -->
+        <button onclick="window.location.href='offline-form.html'">Go to Offline Form</button>
     </div>
-    <script src="date-time.js"></script>  <!-- Link to the new JS file -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('service-worker.js').then(function(registration) {
                     console.log('Service Worker registered with scope:', registration.scope);
-
-                    // Trigger the sync event for date-time after the service worker is registered
-                    registration.sync.register('sync-date-time').then(() => {
-                        console.log('Sync event registered for date-time');
-                    }).catch((error) => {
-                        console.log('Sync event registration failed:', error);
-                    });
-
                 }, function(err) {
                     console.log('Service Worker registration failed:', err);
                 });
