@@ -21,10 +21,11 @@ The project is organized as follows :
 /simple-pwa
 │
 ├── index.html
+├── offline-form.html
 ├── manifest.json
 ├── service-worker.js
 ├── styles.css
-├── offline-form.html
+├── pwa-banner.png
 └── README.md
 ```
 ## Getting Started
