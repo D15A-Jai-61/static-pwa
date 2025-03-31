@@ -22,7 +22,8 @@ The project is organized as follows :
 ├── manifest.json
 ├── service-worker.js
 ├── styles.css
-└── date-time.js
+├── offline-form.html
+└── README.md
 ```
 ## Getting Started
 
