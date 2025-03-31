@@ -12,12 +12,24 @@
         <h1>Welcome to the Simple PWA!</h1>
         <p>This is a Progressive Web App (PWA).</p>
         <p>A PWA is a web application that uses modern web capabilities to deliver an app-like experience to users. It can be installed on your device and works offline.</p>
+        <div id="current-time">
+            <!-- Current time will be displayed here -->
+        </div>
     </div>
+    <script src="date-time.js"></script>  <!-- Link to the new JS file -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('service-worker.js').then(function(registration) {
                     console.log('Service Worker registered with scope:', registration.scope);
+
+                    // Trigger the sync event for date-time after the service worker is registered
+                    registration.sync.register('sync-date-time').then(() => {
+                        console.log('Sync event registered for date-time');
+                    }).catch((error) => {
+                        console.log('Sync event registration failed:', error);
+                    });
+
                 }, function(err) {
                     console.log('Service Worker registration failed:', err);
                 });
