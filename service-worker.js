@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ecommerce-pwa-cache-v1';
+const CACHE_NAME = 'static-pwa-cache-v1';
 const urlsToCache = [
     'index.html',
     'offline.html',
@@ -11,10 +11,17 @@ const urlsToCache = [
 self.addEventListener('install', (event) => {
     console.log('[Service Worker] Install event triggered');
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
+        caches.open(CACHE_NAME).then(async (cache) => {
             console.log('[Service Worker] Caching essential assets');
-            return cache.addAll(urlsToCache);
-        }).then(() => console.log('[Service Worker] Assets cached successfully'))
+            for (const url of urlsToCache) {
+                try {
+                    await cache.add(url);
+                    console.log(`[Service Worker] Cached successfully: ${url}`);
+                } catch (error) {
+                    console.error(`[Service Worker] Failed to cache: ${url}`, error);
+                }
+            }
+        }).then(() => console.log('[Service Worker] Caching process completed'))
         .catch((error) => console.error('[Service Worker] Caching failed:', error))
     );
 });
@@ -98,7 +105,7 @@ self.addEventListener('notificationclick', (event) => {
     event.notification.close();
     if (event.action === 'open') {
         console.log('[Service Worker] Opening application');
-        event.waitUntil(clients.openWindow('https://your-ecommerce-site.com'));
+        event.waitUntil(clients.openWindow('https://your-static-site.com'));
     } else {
         console.log('[Service Worker] Notification dismissed');
     }
