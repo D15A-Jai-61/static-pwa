@@ -9,25 +9,37 @@ const urlsToCache = [
 
 // Install event - Cache essential assets
 self.addEventListener('install', (event) => {
+    console.log('[Service Worker] Install event triggered');
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             console.log('[Service Worker] Caching essential assets');
             return cache.addAll(urlsToCache);
-        })
+        }).then(() => console.log('[Service Worker] Assets cached successfully'))
+        .catch((error) => console.error('[Service Worker] Caching failed:', error))
     );
 });
 
 // Fetch event - Serve cached assets or fetch from network
 self.addEventListener('fetch', (event) => {
+    console.log(`[Service Worker] Fetch event triggered for: ${event.request.url}`);
     event.respondWith(
         caches.match(event.request).then((response) => {
-            return response || fetch(event.request).then((fetchResponse) => {
+            if (response) {
+                console.log(`[Service Worker] Serving cached response for: ${event.request.url}`);
+                return response;
+            }
+            console.log(`[Service Worker] Fetching from network: ${event.request.url}`);
+            return fetch(event.request).then((fetchResponse) => {
                 return caches.open(CACHE_NAME).then((cache) => {
                     cache.put(event.request, fetchResponse.clone());
+                    console.log(`[Service Worker] Cached new resource: ${event.request.url}`);
                     return fetchResponse;
                 });
+            }).catch((error) => {
+                console.error(`[Service Worker] Network request failed for: ${event.request.url}`, error);
+                return caches.match('offline.html');
             });
-        }).catch(() => caches.match('offline.html'))
+        })
     );
 });
 
@@ -40,9 +52,10 @@ self.addEventListener('sync', (event) => {
 });
 
 async function syncFormData() {
+    console.log('[Service Worker] Checking for stored form data to sync...');
     const formData = await idbKeyval.get('formData'); // Use IndexedDB instead of localStorage
     if (formData && formData.length > 0) {
-        console.log('[Service Worker] Syncing form data...');
+        console.log('[Service Worker] Syncing form data:', formData);
         try {
             const response = await fetch('http://localhost:5000/sync', {
                 method: 'POST',
@@ -62,6 +75,7 @@ async function syncFormData() {
 
 // Push event - Handle push notifications
 self.addEventListener('push', (event) => {
+    console.log('[Service Worker] Push event received');
     const options = {
         body: event.data ? event.data.text() : 'New update available!',
         icon: 'pwa-banner.png',
@@ -71,13 +85,21 @@ self.addEventListener('push', (event) => {
             { action: 'dismiss', title: 'Dismiss' }
         ]
     };
-    event.waitUntil(self.registration.showNotification('New Notification', options));
+    event.waitUntil(
+        self.registration.showNotification('New Notification', options)
+        .then(() => console.log('[Service Worker] Push notification displayed successfully'))
+        .catch((error) => console.error('[Service Worker] Failed to display push notification:', error))
+    );
 });
 
 // Handle notification click
 self.addEventListener('notificationclick', (event) => {
+    console.log(`[Service Worker] Notification clicked: ${event.notification.title}`);
     event.notification.close();
     if (event.action === 'open') {
+        console.log('[Service Worker] Opening application');
         event.waitUntil(clients.openWindow('https://your-ecommerce-site.com'));
+    } else {
+        console.log('[Service Worker] Notification dismissed');
     }
 });
