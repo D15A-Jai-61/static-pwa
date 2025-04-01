@@ -1,8 +1,6 @@
 const CACHE_NAME = 'static-pwa-cache-v1';
-const OFFLINE_URL = 'offline.html';
 const urlsToCache = [
     'index.html',
-    OFFLINE_URL,
     'styles.css',
     'manifest.json',
     'pwa-banner.png',
