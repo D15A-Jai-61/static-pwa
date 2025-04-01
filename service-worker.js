@@ -1,7 +1,8 @@
 const CACHE_NAME = 'static-pwa-cache-v1';
+const OFFLINE_URL = 'offline.html';
 const urlsToCache = [
     'index.html',
-    'offline.html',
+    OFFLINE_URL,
     'styles.css',
     'manifest.json',
     'pwa-banner.png',
@@ -11,61 +12,89 @@ const urlsToCache = [
 self.addEventListener('install', (event) => {
     console.log('[Service Worker] Install event triggered');
     event.waitUntil(
-        caches.open(CACHE_NAME).then(async (cache) => {
+        caches.open(CACHE_NAME).then(cache => {
             console.log('[Service Worker] Caching essential assets');
-            for (const url of urlsToCache) {
-                try {
-                    await cache.add(url);
-                    console.log(`[Service Worker] Cached successfully: ${url}`);
-                } catch (error) {
-                    console.error(`[Service Worker] Failed to cache: ${url}`, error);
-                }
-            }
-        }).then(() => console.log('[Service Worker] Caching process completed'))
-        .catch((error) => console.error('[Service Worker] Caching failed:', error))
+            return Promise.all(
+                urlsToCache.map(url => 
+                    cache.add(url).then(() => 
+                        console.log(`[Service Worker] Cached successfully: ${url}`)
+                    ).catch(error => 
+                        console.error(`[Service Worker] Failed to cache: ${url}`, error)
+                    )
+                )
+            );
+        }).then(() => {
+            console.log('[Service Worker] Caching process completed');
+            return self.skipWaiting();
+        })
+        .catch(error => console.error('[Service Worker] Caching failed:', error))
+    );
+});
+
+// Activate event - Cleanup old caches
+self.addEventListener('activate', (event) => {
+    console.log('[Service Worker] Activate event triggered');
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheName !== CACHE_NAME) {
+                        console.log('[Service Worker] Deleting old cache:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => {
+            console.log('[Service Worker] Activation complete');
+            return self.clients.claim();
+        })
     );
 });
 
 // Fetch event - Serve cached assets or fetch from network
 self.addEventListener('fetch', (event) => {
     console.log(`[Service Worker] Fetch event triggered for: ${event.request.url}`);
+    if (event.request.method !== 'GET') return;
+
     event.respondWith(
-        caches.match(event.request).then((response) => {
-            if (response) {
-                console.log(`[Service Worker] Serving cached response for: ${event.request.url}`);
-                return response;
-            }
-            console.log(`[Service Worker] Fetching from network: ${event.request.url}`);
-            return fetch(event.request).then((fetchResponse) => {
-                return caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, fetchResponse.clone());
-                    console.log(`[Service Worker] Cached new resource: ${event.request.url}`);
-                    return fetchResponse;
-                });
-            }).catch((error) => {
-                console.error(`[Service Worker] Network request failed for: ${event.request.url}`, error);
-                return caches.match('offline.html');
+        fetch(event.request).then(networkResponse => {
+            console.log(`[Service Worker] Network response for ${event.request.url}`);
+            return caches.open(CACHE_NAME).then(cache => {
+                cache.put(event.request, networkResponse.clone());
+                return networkResponse;
+            });
+        }).catch(error => {
+            console.log(`[Service Worker] Network failed, trying cache for ${event.request.url}`);
+            return caches.match(event.request).then(cachedResponse => {
+                if (cachedResponse) {
+                    console.log(`[Service Worker] Serving from cache: ${event.request.url}`);
+                    return cachedResponse;
+                }
+                if (event.request.mode === 'navigate') {
+                    return caches.match(OFFLINE_URL);
+                }
+                return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
             });
         })
     );
 });
 
-// Sync event - Trigger manual sync via DevTools
+// Sync event - Handle background sync
 self.addEventListener('sync', (event) => {
+    console.log(`[Service Worker] Sync event triggered: ${event.tag}`);
     if (event.tag === 'sync-demo') {
-        console.log('[Service Worker] Sync event triggered manually');
-        event.waitUntil(syncDemoTask());
+        event.waitUntil(
+            handleSync().catch(error => {
+                console.error('[Service Worker] Sync failed:', error);
+            })
+        );
     }
 });
 
-async function syncDemoTask() {
-    console.log('[Service Worker] Running sync task...');
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            console.log('[Service Worker] Sync task completed successfully!');
-            resolve();
-        }, 2000);
-    });
+async function handleSync() {
+    console.log('[Service Worker] Starting sync...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    console.log('[Service Worker] Sync task completed successfully!');
 }
 
 // Push event - Handle push notifications
