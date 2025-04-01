@@ -50,34 +50,22 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// Sync event - Retry offline form submissions
+// Sync event - Trigger manual sync via DevTools
 self.addEventListener('sync', (event) => {
-    if (event.tag === 'sync-form') {
-        console.log('[Service Worker] Sync event triggered: Submitting offline form data...');
-        event.waitUntil(syncFormData());
+    if (event.tag === 'sync-demo') {
+        console.log('[Service Worker] Sync event triggered manually');
+        event.waitUntil(syncDemoTask());
     }
 });
 
-async function syncFormData() {
-    console.log('[Service Worker] Checking for stored form data to sync...');
-    const formData = await idbKeyval.get('formData'); // Use IndexedDB instead of localStorage
-    if (formData && formData.length > 0) {
-        console.log('[Service Worker] Syncing form data:', formData);
-        try {
-            const response = await fetch('http://localhost:5000/sync', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(formData),
-            });
-            const data = await response.json();
-            console.log('[Service Worker] Data synced successfully:', data);
-            await idbKeyval.del('formData'); // Clear stored data after successful sync
-        } catch (error) {
-            console.error('[Service Worker] Failed to sync data:', error);
-        }
-    } else {
-        console.log('[Service Worker] No form data to sync');
-    }
+async function syncDemoTask() {
+    console.log('[Service Worker] Running sync task...');
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            console.log('[Service Worker] Sync task completed successfully!');
+            resolve();
+        }, 2000);
+    });
 }
 
 // Push event - Handle push notifications
