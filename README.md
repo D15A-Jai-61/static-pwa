@@ -8,7 +8,6 @@ This is a simple static Progressive Web App (PWA) that demonstrates the capabili
 - **Offline Support**: The service worker caches essential files, allowing the app to function without an internet connection.
 - **Installable**: Users can install the app on their devices, providing a native app-like experience.
 - **Background Image**: The app features a customizable background image that adapts to different screen sizes.
-- **Offline Form Submission**: Users can submit forms even when offline, and the app will sync the data when the connection is restored.
 - **Service Worker Sync**: The app will retry sending form data once the network connection is back up.
 - **Dynamic Content Caching**: The app caches and serves dynamic content for offline use.
 - **Push Notifications**: Users will receive push notifications for new content or updates.
@@ -21,33 +20,14 @@ The project is organized as follows :
 /simple-pwa
 │
 ├── index.html
-├── offline-form.html
 ├── manifest.json
 ├── service-worker.js
 ├── styles.css
 ├── pwa-banner.png
-├── server.js
 └── README.md
 
 
 ```
-## Getting Started
-
-Install dependencies :
-
-npm run dev
-
-
-Run the following commands :
-
-npm install
-
-npm run start:backend
-
-npm run start:frontend
-
-npm run dev
-
 
 ## License
 
@@ -56,6 +36,10 @@ This project solely exists for me to learn about PWAs and how to build them, and
 
 ## Copyrighted content
 
-This project includes a logo being displayed in the background. I do not own the image or logo, it was only included for ensuring PWA's "install to homescreen" function will work on browsers that require it in the manifest file, and I decided let's also use it in the webpage.
+This project includes a logo being displayed in the background. I do not own the image or logo, it was only included for ensuring PWA's "install to homescreen" function will work on browsers that require it in the manifest.json file, and I decided let's also use it in the webpage because it does look really good, especially with my implementation.
 
 I recommend not using this image when running on your system and not to distribute this image.
+
+## Important notice
+
+This project was built via the method of "Vibe coding".
